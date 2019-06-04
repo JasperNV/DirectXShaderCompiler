@@ -11060,6 +11060,12 @@ void hlsl::HandleDeclAttributeForHLSL(Sema &S, Decl *D, const AttributeList &A, 
   case AttributeList::AT_VKShaderRecordNV:
     declAttr = ::new (S.Context) VKShaderRecordNVAttr(A.getRange(), S.Context, A.getAttributeSpellingListIndex());
     break;
+  case AttributeList::AT_VKExtern:
+    declAttr = ::new (S.Context) VKExternAttr(A.getRange(), S.Context,
+        ValidateAttributeStringArg(S, A, nullptr),
+        ValidateAttributeIntArg(S, A, 1),
+        A.getAttributeSpellingListIndex());
+    break;
   default:
     Handled = false;
     return;

@@ -981,6 +981,14 @@ def VKShaderRecordNV : InheritableAttr {
   let LangOpts = [SPIRV];
   let Documentation = [Undocumented];
 }
+
+def VKExtern : InheritableAttr {
+  let Spellings = [CXX11<"vk", "extern">];
+  let Subjects = SubjectList<[Function], ErrorDiag>;
+  let Args = [StringArgument<"InstSet">, IntArgument<"Binding">];
+  let LangOpts = [SPIRV];
+  let Documentation = [Undocumented];
+}
 // SPIRV Change Ends
 
 def C11NoReturn : InheritableAttr {

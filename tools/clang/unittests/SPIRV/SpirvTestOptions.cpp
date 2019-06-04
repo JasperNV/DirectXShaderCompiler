@@ -18,7 +18,7 @@ namespace clang {
 namespace spirv {
 namespace testOptions {
 
-std::string inputDataDir = "";
+std::string inputDataDir = "C:\\nvdev\\DirectXShadercompiler\\tools\\clang\\test\\CodeGenSPIRV";
 
 } // namespace testOptions
 } // namespace spirv

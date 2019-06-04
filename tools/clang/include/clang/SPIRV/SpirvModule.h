@@ -110,9 +110,9 @@ public:
   // Adds an extended instruction set to the module.
   void addExtInstSet(SpirvExtInstImport *);
 
-  // Returns the GLSL extended instruction set if already added to the module.
-  // Returns nullptr otherwise.
-  SpirvExtInstImport *getGLSLExtInstSet();
+  // Returns the extended instruction set for the given import name if already
+  // added to the module. Returns nullptr otherwise;
+  SpirvExtInstImport *getExtInstSet(llvm::StringRef importName);
 
   // Adds a variable to the module.
   void addVariable(SpirvVariable *);

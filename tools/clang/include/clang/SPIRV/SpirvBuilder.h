@@ -439,8 +439,13 @@ public:
   void addModuleProcessed(llvm::StringRef process);
 
   /// \brief If not added already, adds an OpExtInstImport (import of extended
-  /// instruction set) of the GLSL instruction set. Returns the  the imported
-  /// GLSL instruction set.
+  /// instruction set) of the given instruction set. Returns the imported
+  /// instruction set.
+  SpirvExtInstImport *getExtInstSet(llvm::StringRef importName);
+
+  /// \brief If not added already, adds an OpExtInstImport (import of extended
+  /// instruction set) of the GLSL instruction set. Returns the imported GLSL
+  /// instruction set.
   SpirvExtInstImport *getGLSLExtInstSet();
 
   /// \brief Adds a stage input/ouput variable whose value is of the given type.

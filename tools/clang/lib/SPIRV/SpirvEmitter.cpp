@@ -377,7 +377,8 @@ inline const HLSLBufferDecl *getCTBufferContext(const VarDecl *varDecl) {
 inline const FunctionDecl *getCalleeDefinition(const CallExpr *expr) {
   const auto *callee = expr->getDirectCallee();
 
-  if (callee->isThisDeclarationADefinition())
+  if (callee->isThisDeclarationADefinition() ||
+      callee->getAttr<VKExternAttr>() != nullptr)
     return callee;
 
   // We need to update callee to the actual definition here
@@ -973,6 +974,10 @@ SpirvInstruction *SpirvEmitter::castToType(SpirvInstruction *value,
 
 void SpirvEmitter::doFunctionDecl(const FunctionDecl *decl) {
   assert(decl->isThisDeclarationADefinition());
+
+  // Extern function declarations don't do anything.
+  if (decl->getAttr<VKExternAttr>() != nullptr)
+    return;
 
   // A RAII class for maintaining the current function under traversal.
   class FnEnvRAII {
@@ -2173,16 +2178,30 @@ SpirvInstruction *SpirvEmitter::processCall(const CallExpr *callExpr) {
   assert(vars.size() == args.size());
 
   // Push the callee into the work queue if it is not there.
-  addFunctionToWorkQueue(spvContext.getCurrentShaderModelKind(), callee,
-                         /*isEntryFunction*/ false);
+  if (callee->isDefined())
+    addFunctionToWorkQueue(spvContext.getCurrentShaderModelKind(), callee,
+                           /*isEntryFunction*/ false);
 
   const QualType retType =
       declIdMapper.getTypeAndCreateCounterForPotentialAliasVar(callee);
-  // Get or forward declare the function <result-id>
-  SpirvFunction *func = declIdMapper.getOrRegisterFn(callee);
 
-  auto *retVal = spvBuilder.createFunctionCall(
-      retType, func, vars, callExpr->getCallee()->getExprLoc());
+  const VKExternAttr *externAttr = callee->getAttr<VKExternAttr>();
+  SpirvInstruction *retVal;
+  if (externAttr != nullptr) {
+    // Import the proper library
+    SpirvExtInstImport *set =
+        spvBuilder.getExtInstSet(externAttr->getInstSet());
+
+    retVal = spvBuilder.createExtInst(
+        retType, set, GLSLstd450(externAttr->getBinding()), vars,
+        callExpr->getCallee()->getExprLoc());
+  } else {
+    // Get or forward declare the function <result-id>
+    SpirvFunction *func = declIdMapper.getOrRegisterFn(callee);
+
+    retVal = spvBuilder.createFunctionCall(retType, func, vars,
+                                           callExpr->getCallee()->getExprLoc());
+  }
 
   // Go through all parameters and write those marked as out/inout
   for (uint32_t i = 0; i < numParams; ++i) {
